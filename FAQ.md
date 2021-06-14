@@ -100,7 +100,7 @@ You need 3 packages (applications) enabled (use search in NetGuard to find them 
 * com.android.providers.downloads (Download manager)
 
 Since the Google Play™ store app has a tendency to check for updates or even download them all by itself (even if no account is associated),
-one can keep it in check by enabling "*Allow when device in use*" for all 3 of these packages.
+one can keep it in check by enabling "*Allow when screen is on*" for all 3 of these packages.
 Click on the down arrow on the left side of an application name and check that option,
 but leave the network icons set to red (hence blocked).  The little human icon will appear for those packages.
 
@@ -150,6 +150,8 @@ To avoid this problem, at least temporarily, close all applications and/or servi
 
 F-Droid builds are not supported because I have no control over if and when the F-Droid version of NetGuard will be updated,
 so I cannot guarantee timely updates, for example if there is a critical or security issue.
+
+Because F-Droid builds and GitHub releases are signed differently, an F-Droid build needs to be uninstalled first to be able to update to a GitHub release.
 
 <a name="faq16"></a>
 **(16) Why are some applications shown dimmed?**
@@ -403,6 +405,8 @@ See [here](http://forum.xda-developers.com/showpost.php?p=67892427&postcount=303
 <a name="faq38"></a>
 **(38) Why did NetGuard stop running?**
 
+First of all, please make sure you disabled battery optimizations for NetGuard in the Android settings.
+
 On most devices, NetGuard will keep running in the background with its foreground service.
 On some devices (in particular some Samsung models), where there are lots of applications competing for memory, Android may still stop NetGuard as a last resort.
 Some Android versions, in particular of Huawei (see [here](https://www.forbes.com/sites/bensin/2016/07/04/push-notifications-not-coming-through-to-your-huawei-phone-heres-how-to-fix-it/) for a fix) or Xiaomi (see [here](https://www.forbes.com/sites/bensin/2016/11/17/how-to-fix-push-notifications-on-xiaomis-miui-8-for-real/) for a fix) stop apps and services too aggressively.
@@ -440,6 +444,7 @@ Since NetGuard blocks, unlike any other no-root firewall, domain names instead o
 * WAKE_LOCK ('*Prevent device from sleeping*'): to reliably reload rules in the background on connectivity changes
 * VIBRATE: to provide vibration feedback on widget tap
 * FOREGROUND_SERVICE ('foreground service'): to run a foreground service on Android 9 Pie and later
+* QUERY_ALL_PACKAGES: to list all apps on Android 11 and later
 * BILLING: to use in-app billing
 
 <a name="faq43"></a>
@@ -478,7 +483,7 @@ If a purchased pro feature doesn't work [as described](https://www.netguard.me/)
 and this isn't caused by a problem in the free features
 and I cannot fix the problem in a timely manner, you can get a refund.
 In all other cases there is no refund possible.
-In no circumstances there is a refund possible for any problem related to the free features,
+In no circumstances there can be a refund for any problem related to the free features,
 since there wasn't paid anything for them and because they can be evaluated without any limitation.
 I take my responsibility as seller to deliver what has been promised
 and I expect that you take responsibility for informing yourself of what you are buying.
@@ -526,9 +531,10 @@ Make sure you are not running NetGuard in allow (whitelist) mode (check the NetG
 Make sure you didn't enable the Always-On VPN setting '*Block connections without VPN*' (Android 8 Oreo or later).
 This will block resolving domain names too (is it a bug or feature?).
 
-Some Android versions, including LineageOS for some devices, contain a bug resulting in all internet traffic being blocked.
+Some Android versions, including LineageOS and /e/ for some devices, contain a bug resulting in all internet traffic being blocked.
 Mostly, you can workaround this bug by enabling filtering in NetGuard's *Advanced options*.
 If this doesn't solve the issue, the problem can unfortunately not be fixed or worked around by NetGuard.
+Please [see here](https://forum.xda-developers.com/t/app-6-0-netguard-no-root-firewall.3233012/post-84457527) for a fix.
 
 <a name="faq52"></a>
 **(52) What is lockdown mode?**
@@ -537,7 +543,12 @@ In lockdown mode, all traffic for all applictions will be blocked,
 except for applications with the condition *'Allow in lockdown mode'* enabled.
 You can use this mode to limit battery usage or network usage,
 for example, when your battery is almost empty or when your data allotment is almost exhausted.
-Note that system applications will only be blocked in this mode
+
+Note that Lockdown mode applies only if the corresponding option is also set in "Network options" 
+(one for Wi-Fi mode, one for Mobile data), allowing to have lockdown in only one of the two network modes 
+and not in the other (eg. Lock down if mobile data are active, but not if Wi-Fi is currently used).
+
+Note also that system applications will only be blocked in this mode
 when managing system applications is enabled in the advanced settings.
 
 You can enable/disable lockdown mode in the main menu, using a widget, or using a settings tile (Android 7 Nougat or later).
@@ -609,13 +620,14 @@ In some circumstances, restricting system apps and system components is known to
 <a name="faq59"></a>
 **(59) Can you help me restore my purchase?**
 
-Google manages all purchases, so as developer I have no control over purchases.
+Google manages all purchases, so as a developer I have no control over purchases.
 So, the only thing I can do, is give some advice:
 
 * Make sure you have an active internet connection
 * Make sure you didn't block Google Play store / Play services
 * Make sure you are logged in with the right Google account and that there is nothing wrong with your Google account
-* Open the Play store application and wait at least a minute to give it time to synchronize with the Google servers
+* Make sure you installed NetGuard via the right Google account if you configured multiple Google accounts on your device
+* Open the Play store app and wait at least a minute to give it time to synchronize with the Google servers
 * Open NetGuard and navigate to the pro features screen; NetGuard will check the purchases again
 
 You can also try to clear the cache of the Play store app via the Android apps settings.
@@ -625,7 +637,9 @@ Note that:
 * Purchases are stored in the Google cloud and cannot get lost
 * There is no time limit on purchases, so they cannot expire
 * Google does not expose details (name, e-mail, etc) about buyers to developers
-* An application like NetGuard cannot select which Google account to use
+* An app like NetGuard cannot select which Google account to use
+* It may take a while until the Play store app has synchronized a purchase to another device
+* Play Store purchases cannot be used without the Play Store, which is also not allowed by Play Store rules
 
 If you cannot solve the problem with the purchase, you will have to contact Google about it.
 
@@ -700,11 +714,14 @@ Blocked apps cannot access the internet. There are no exceptions to this.
 
 However:
 
+* Apps can show locally cached content
 * Incoming (push) messages are received by the system component Google Play services and not apps, especially when the app is in the background or when the screen is turned off
 * Similarly, advertisements are mostly received by the system component Google Play services
 * Downloads are often performed by the download manager and not apps
 
 If you like to block Google Play services or the download manager, you'll need to enable managing system apps in the advanced settings.
+
+If you like to make sure that push messages will always be received, you can disable *Apply rules and conditions* for Google Play services.
 
 To be clear: in most cases **you cannot block ads by blocking apps**.
 However, you can block ads for all apps with NetGuard, please see [here](https://github.com/M66B/NetGuard/blob/master/ADBLOCKING.md) about how to.

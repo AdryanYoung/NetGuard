@@ -24,10 +24,10 @@ import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -62,6 +62,9 @@ public class ServiceExternal extends IntentService {
                 final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
                 String hosts_url = prefs.getString("hosts_url", null);
+                if ("https://www.netguard.me/hosts".equals(hosts_url))
+                    hosts_url = BuildConfig.HOSTS_FILE_URI;
+
                 File tmp = new File(getFilesDir(), "hosts.tmp");
                 File hosts = new File(getFilesDir(), "hosts.txt");
 

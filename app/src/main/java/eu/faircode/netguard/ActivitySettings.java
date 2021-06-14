@@ -44,7 +44,6 @@ import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.TwoStatePreference;
 import android.text.SpannableStringBuilder;
@@ -64,6 +63,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 import androidx.core.util.PatternsCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -173,6 +173,12 @@ public class ActivitySettings extends AppCompatActivity implements SharedPrefere
                     listSSID.add(ssid);
             pref_wifi_homes.setEntries(listSSID.toArray(new CharSequence[0]));
             pref_wifi_homes.setEntryValues(listSSID.toArray(new CharSequence[0]));
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            TwoStatePreference pref_handover =
+                    (TwoStatePreference) screen.findPreference("handover");
+            cat_advanced.removePreference(pref_handover);
         }
 
         Preference pref_reset_usage = screen.findPreference("reset_usage");
@@ -312,9 +318,11 @@ public class ActivitySettings extends AppCompatActivity implements SharedPrefere
 
         pref_rcode.setTitle(getString(R.string.setting_rcode, prefs.getString("rcode", "3")));
 
+        if (Util.isPlayStoreInstall(this) || !Util.hasValidFingerprint(this))
+            cat_options.removePreference(screen.findPreference("update_check"));
+
         if (Util.isPlayStoreInstall(this)) {
             Log.i(TAG, "Play store install");
-            cat_options.removePreference(screen.findPreference("update_check"));
             cat_advanced.removePreference(pref_block_domains);
             cat_advanced.removePreference(pref_rcode);
             cat_advanced.removePreference(pref_forwarding);
@@ -357,9 +365,14 @@ public class ActivitySettings extends AppCompatActivity implements SharedPrefere
                 public boolean onPreferenceClick(Preference preference) {
                     final File tmp = new File(getFilesDir(), "hosts.tmp");
                     final File hosts = new File(getFilesDir(), "hosts.txt");
+
                     EditTextPreference pref_hosts_url = (EditTextPreference) screen.findPreference("hosts_url");
+                    String hosts_url = pref_hosts_url.getText();
+                    if ("https://www.netguard.me/hosts".equals(hosts_url))
+                        hosts_url = BuildConfig.HOSTS_FILE_URI;
+
                     try {
-                        new DownloadTask(ActivitySettings.this, new URL(pref_hosts_url.getText()), tmp, new DownloadTask.Listener() {
+                        new DownloadTask(ActivitySettings.this, new URL(hosts_url), tmp, new DownloadTask.Listener() {
                             @Override
                             public void onCompleted() {
                                 if (hosts.exists())
